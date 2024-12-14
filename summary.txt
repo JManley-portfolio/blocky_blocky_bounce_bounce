@@ -1,0 +1,103 @@
+Blocky Blocky Bounce Bounce
+
+Blocky Blocky Bounce Bounce is comprised of 4 main classes, and a BlockyApplication controller to run them. The classes are as follows:
+	TitleScreen.java
+	GameScreen.java
+	GameScreenHard.java
+	ResultScreen.java
+	Platform.java
+
+
+GUI
+TitleScreen calls either GameScreen or GameScreenHard, passing the players name, and a Boolean for difficulty.
+GameScreen and GameScreenHard both call ResultScreen, passing the players name, score, and a Boolean for difficulty 
+ResultScreen calls TitleScreen, or calls whichever version of GameScreen was selected passing it the players name and a Boolean for difficulty
+
+
+COMPOSITION AND INHERITANCE
+Platforms exist as objects with basic dimensions, an x and y for screen location and a fallingSpeed variable initialized to 0. This allows
+the same object to be used as a platform, a wall, or a falling block.The GameScreenHard class inherits the full GameScreen class, simply
+adding functionality for falling block and collision detection.
+
+
+ERROR/EXCEPTION HANDLING	
+This program didn't need much in the way of error validation. A try catch block is used to ensure valid entry for player name. 
+Most of the error validation exist in the ResultsScreen class, when reading from or writing to the leaderboard.txt file, however
+since the file is only read or written to once, when ResultScreen loads, only a single try, catch block was required.
+
+
+PROCESS FLOW
+-> Title Screen
+The program opens a window for the user to enter their name and select between two game modes; easy and hard. If no name is entered an 
+alert appears until a valid name is entered, and either the "Play" or "Hard Mode" buttons are clicked. There is also a button to quit the application.
+	
+	-> Play button clicked -> GameScreen(player Name, difficulty)
+	A new screen appears with randomly generated platforms. The player controls a block on the screen with 	the arrow keys, the 'wasd'
+	keys, or the spacebar to jump. The object of the game is to traverse as far to the right as possible without allowing the player 
+	block to exit the screen. A running score is kept to track the players distance. The platforms appear randomly based on existing 
+	platforms, and off screen platforms are removed to avoid overloading the program. If the top edge of the player block passes the
+	bottom edge of the screen, or the bottom edge of the player block passes the top edge of the screen the game is over, and the player name 
+	and score are passed to the Result Screen 
+
+
+	-> Hard Mode button clicked-> GameScreenHard(player name, difficulty)
+	Identical GameScreen, however randomly generated blocks fall from the sky and end the game upon collision with the player block
+
+
+		-> Game Over -> ResultScreen(Player name, score, difficulty) 
+		A new screen appears with the text "Game Over" across the top, as well as the players name and final score. The players score 
+		is added to a leaderboard, pulled from leaderboard.txt. The leaderboard is sorted incrementally by score, and limited to five 
+		records to maintain a dynamic leaderboard, then displayed on the screen, and saved by overwriting the leaderboard.txt file. 
+		Each game mode has it's own unique leaderboard. Below the leaderboard are two buttons, a Play Again Button, and a "Title" button. 
+
+			-> Play Again Button Clicked -> GameScreen(Player name, difficulty)
+
+			-> Title Button Clicked -> TitleScreen
+
+
+	-> Quit button clicked -> PROGRAM EXIT
+
+
+CHALLENGES
+-Platform Generation and Collision Detection
+	The platform generation and subsequent collision detection was a nightmare. Not only did I need the platforms to generate randomly, 
+	a certain distance apart, in a certain part of the screen, but I also needed the platforms to move to the left as the player moved 
+	past them in order to simulate scrolling. Since the platforms and the player were in different positions each frame, finding the right
+	combination of factors to determine accurate collision came down to a long process of trial and error. I printed out the four corners 
+	of each platform and the player each frame and used that information to dial in the collision. Once it was generating platforms, and 
+	detecting collisions correctly, I tweaked the platform generation to further increase the difficulty, turning some of the platforms 
+	into more of walls for the player to go under or over.
+
+-Dynamic movement speed
+	At first every aspect of my game was static. This meant if the window became smaller or larger, the player block would then seem to be moving
+	faster or slower. In order to fix this I introduced base values and dynamic values for all movement. By assigning the dynamic values 
+	as dependent on screen size and base values, I was easily able to dial in the ideal base values for consistent performance across screen 
+	sizes. This, however, did not fix the issue of my game performing as if it was being played on the moon on less sophisticated hardware. 
+
+-Cross-hardware normalization
+	Investigating the issue of cross-hardware performance normalization, I quickly discovered the concept of delta time. A concept used by 
+	game developers to base updates in the game off of real time as opposed to frames. Implementing this led to another long session of 
+	debugging through trial and error. I realized it wasn't going to work unless I set the frame rate using the same method, as the framerate
+	wouldn't keep up with the movement of the player or platforms, causing MAJOR ISSUES. I finally figured it out: by adding a variable for 
+	frame time, I was able to not only control the refresh rate down to the frame, but also ensure that the update() function was
+	consistently being called in sync with my framerate.
+
+-Simplifying leaderboard process
+	For some reason I really struggled at first with coming up with an efficient way to manage the leaderboard. It seemed like it was going
+	to be incredibly difficult to parse through a text file, identify if any of the values in the file were lower than the players score, 
+	and insert into the file where needed. Then, almost like a bolt of lightning, I realized I was massively overcomplicating things. 
+	Why would I want to access the file to read it, then again to overwrite just a single line. So instead, the program assigns the names 
+	and values to a map, immediately adds the players name and score, sorts the list incrementally based on score value, and removes the lowest 
+	item if there are more than 5. It then immediately writes the new leaderboard onto the text file, completely overwriting the old one. 
+	This method minimizes the need to interact with the file and allows me to "insert" the players score into the correct place in the list 
+	every time with minimal effort.
+
+-Hard Mode
+	From the very beginning I had pictured making two modes. It actually ended up being far easier than I expected, but it feels worth noting 
+	because it utilizes the platform class as falling blocks, and also required me to re-prioritize a lot of the member-data in GameScreen to 
+	be accessible in functions that existed in GameScreenHard, but not GameScreen. The collision detection for the falling blocks was actually
+	quite easy, being very similar to the platform detection rules. I just had to dial in exactly how I wanted the blocks to fall to make it 
+	both realistic, but also playable. The largest issue was figuring out how to get the results screen to pull from the correct leaderboard 
+	file, and to play the correct game mode when the play again button was clicked. The fix was as simple as adding a Boolean value to the 
+	member data of both game modes, and passing the value explicitly in the show function on the controller.
+
