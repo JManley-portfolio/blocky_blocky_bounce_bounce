@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: com.example.blocky_blocky_v2.BlockyApplication
+
